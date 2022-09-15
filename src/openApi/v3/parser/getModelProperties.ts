@@ -21,6 +21,7 @@ export const getModelProperties = (
     for (const propertyName in definition.properties) {
         if (definition.properties.hasOwnProperty(propertyName)) {
             const property = definition.properties[propertyName];
+            const propertyDeprecated = property.deprecated === true;
             const propertyRequired = !!definition.required?.includes(propertyName);
             const propertyValues: Omit<
                 Model,
@@ -37,7 +38,7 @@ export const getModelProperties = (
             > = {
                 name: escapeName(propertyName),
                 description: property.description || null,
-                deprecated: property.deprecated === true,
+                deprecated: propertyDeprecated,
                 isDefinition: false,
                 isReadOnly: property.readOnly === true,
                 isRequired: propertyRequired,
@@ -56,6 +57,10 @@ export const getModelProperties = (
                 minProperties: property.minProperties,
                 pattern: getPattern(property.pattern),
             };
+            // Exclude deprecated properties
+            if (propertyDeprecated) {
+                continue;
+            }
             if (parent && discriminator?.propertyName == propertyName) {
                 models.push({
                     export: 'reference',
